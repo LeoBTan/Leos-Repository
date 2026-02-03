@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class PrintCostforWill {
+public class PrintCost {
     public static void main(String[] args) {
         double Total;
         double PLAPrice = 0.026;

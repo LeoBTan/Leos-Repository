@@ -1,3 +1,3 @@
 ## This is my repository, nothing much
 
-hello
+I hope this repository contains all that I need...

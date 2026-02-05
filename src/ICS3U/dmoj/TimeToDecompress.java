@@ -1,4 +1,4 @@
-package ICS3U.dmoj;
+package ICS3U.DMOJ;
 
 import java.util.Scanner; // Import Scanner in order to read inputs.
 

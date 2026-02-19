@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class ArtC {
+public class ArtB {
     public static void main(String[] args) throws IOException{
         BufferedReader scan = new BufferedReader(new InputStreamReader(System.in));
 
@@ -16,15 +16,17 @@ public class ArtC {
             String[] l = scan.readLine().split(",");
             int x = Integer.parseInt(l[0]), y = Integer.parseInt(l[1]);
 
-            if (x < minX) {
+            if (x <= minX) {
                 minX = x;
-            } else if (x > maxX) {
+            }
+            if (x >= maxX) {
                 maxX = x;
             }
 
-            if (y < minY) {
+            if (y <= minY) {
                 minY = y;
-            } else if (y > maxY) {
+            }
+            if (y >= maxY) {
                 maxY = y;
             }
         }

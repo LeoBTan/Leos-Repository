@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 /**
  * Author: Leo Tan
  * Date: Monday, February 2nd, 2026 at 11:59pm
- * Problem: CCC '19 J2 - Time to Decompress
+ * Problem: CCC '19 J2 - Time to Decompress<br>
  * Description: In order to solve the problem, the number of lines inuputted is the number of times a for-loop is run.
  * Inside the for-loop, arrays are created in order to store all inputted lines.
  * Integers are separated from strings and used to create another for-loop.

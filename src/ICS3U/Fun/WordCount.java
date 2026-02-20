@@ -9,7 +9,7 @@ public class WordCount {
         String[] counter = word.split(" ");
 
         for (String i : counter) {
-            Count = (Count + 1);
+            Count++;
         }
         System.out.println(Count);
     }

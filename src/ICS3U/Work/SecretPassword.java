@@ -1,4 +1,4 @@
-package ICS3U.Fun;
+package ICS3U.Work;
 import java.util.Scanner;
 
 public class SecretPassword {

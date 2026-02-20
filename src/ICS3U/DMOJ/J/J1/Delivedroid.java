@@ -3,7 +3,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Delivedroid2023 {
+public class Delivedroid {
     public static void main(String[] args) throws IOException{
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
 

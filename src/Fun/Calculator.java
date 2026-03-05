@@ -1,4 +1,4 @@
-package Funs;
+package Fun;
 import java.util.Scanner;
 import java.math.BigDecimal;
 import java.math.MathContext;

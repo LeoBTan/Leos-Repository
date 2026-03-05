@@ -1,4 +1,4 @@
-package Funs;
+package Fun;
 public class App {
     public static void main(String[] args) {
         boolean p = false, q = false;

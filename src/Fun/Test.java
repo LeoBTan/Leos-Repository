@@ -1,4 +1,4 @@
-package Funs;
+package Fun;
 import java.util.Scanner;
 
 public class Test {

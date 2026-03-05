@@ -1,4 +1,4 @@
-package Funs;
+package Fun;
 public class CoinFlip {
     public static void main(String[] args) {
         double a;

@@ -10,13 +10,13 @@ public class ModInverse {
         int n = 1;
 
         while (x*n % m != 1) {
-            if (n > 100) {
+            if (n > m) {
                 break;
             }
             n++;
         }
 
-        if (n > 100) {
+        if (n > m) {
             System.out.println("No such integer exists.");
         } else {
             System.out.println(n);

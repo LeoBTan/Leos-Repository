@@ -1,12 +1,14 @@
 package ICS3U.DMOJ.J.J2;
 
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class ModInverse {
-    public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
-        int x = scan.nextInt();
-        int m = scan.nextInt();
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int x = Integer.parseInt(br.readLine());
+        int m = Integer.parseInt(br.readLine());
         int n = 1;
 
         while (x*n % m != 1) {

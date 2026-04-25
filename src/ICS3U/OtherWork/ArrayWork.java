@@ -1,4 +1,4 @@
-package ICS3U.Work;
+package ICS3U.OtherWork;
 
 public class ArrayWork {
     public static void main(String[] args) {

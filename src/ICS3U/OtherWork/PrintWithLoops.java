@@ -1,4 +1,4 @@
-package ICS3U.Work;
+package ICS3U.OtherWork;
 public class PrintWithLoops {
     public static void main(String[] args) {
         for (int i = 0; i < 5; i++) {

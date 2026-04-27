@@ -12,7 +12,6 @@ public class SimpleEncryptionB {
         String message = read.readLine().replaceAll("[^a-zA-Z]", "");
 
         for (int i = 0; i < message.length(); i++) {
-            
         }
     }
 }

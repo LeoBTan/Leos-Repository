@@ -99,4 +99,8 @@ class GamePanel extends JPanel implements ActionListener {
         super.paintComponent(g);
         g.drawString("Game Started!", 50, 50);
     }
+
+    public double dotProduct(double v1x, double v1y, double v2x, double v2y) {
+        return v1x * v2x + v1y * v2y;
+    }
 }

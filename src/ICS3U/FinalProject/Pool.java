@@ -50,8 +50,8 @@ class LandingPage extends JPanel {
 
         // Load background image
         try {
-            backgroundImage = new javax.imageio.ImageIO().read(
-                new java.io.File("src/ICS3U/FinalProject/pooltable.png")
+            backgroundImage = javax.imageio.ImageIO.read(
+                new java.io.File("src/ICS3U/FinalProject/images.png/pooltable.png")
             );
         } catch (Exception e) {
             System.out.println("Image not found");
@@ -68,8 +68,14 @@ class LandingPage extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Keep pixel art sharp - no smoothing
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        
         if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
     }
 }
@@ -97,6 +103,13 @@ class GamePanel extends JPanel implements ActionListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawString("Game Started!", 50, 50);
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Keep pixel art sharp
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+                             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        
+        // Draw your game elements here
+        g2d.drawString("Game Started!", 50, 50);
     }
 }

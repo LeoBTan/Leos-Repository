@@ -72,11 +72,11 @@ class LandingPage extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        
+
         // Keep pixel art sharp - no smoothing
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
-                             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
         if (backgroundImage != null) {
             g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
@@ -84,24 +84,16 @@ class LandingPage extends JPanel {
 }
 
 class GamePanel extends JPanel implements ActionListener {
-    private final int SCREEN_WIDTH = 900;
+    private final int SCREEN_WIDTH = 1400;
     private final int SCREEN_HEIGHT = 700;
-    private final int UNIT_SIZE = 25;
+    private final int UNIT_SIZE = 19;
     private final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
 
     final int[] x = new int[GAME_UNITS];
     final int[] y = new int[GAME_UNITS];
     boolean isGameRunning = true;
 
-    private double vxA = 0;
-    private double vyA = 0;
-    private double vxB = 0;
-    private double vyB = 0;
-
-    private double friction = 0.98;
-
-    BufferedImage ball1Image, ball2Image, ball3Image, ball4Image, ball5Image, ball6Image, ball7Image, ball8Image,
-            ball9Image, ball10Image, ball11Image, ball12Image, ball13Image, ball14Image, ball15Image, cueBallImage;
+    BufferedImage poolTableImage, cueImage;
 
     GamePanel(Pool pool) {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -109,117 +101,13 @@ class GamePanel extends JPanel implements ActionListener {
         this.setFocusable(true);
 
         try {
-            ball1Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball1.png"));
+            poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable.png"));
+            cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
         } catch (IOException e) {
-            System.out.println("Could not find Ball1.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball2Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball2.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball2.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball3Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball3.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball3.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball4Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball4.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball4.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball5Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball5.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball5.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball6Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball6.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball6.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball7Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball7.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball7.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball8Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball8.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball8.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball9Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball9.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball9.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball10Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball10.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball10.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball11Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball11.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball11.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball12Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball12.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball12.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball13Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball13.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball13.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball14Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball14.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball14.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            ball15Image = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball15.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball15.png!");
-            e.printStackTrace();
-        }
-
-        try {
-            cueBallImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Balls/Ball16.png"));
-        } catch (IOException e) {
-            System.out.println("Could not find Ball16.png!");
-            e.printStackTrace();
+            System.out.println("Error loading images: " + e.getMessage());
         }
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -234,22 +122,8 @@ class GamePanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g) {
         if (isGameRunning) {
-            g.drawImage(ball1Image, 100, 200, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball2Image, 100, 300, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball3Image, 100, 400, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball4Image, 100, 500, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball5Image, 200, 200, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball6Image, 200, 300, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball7Image, 200, 400, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball8Image, 200, 500, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball9Image, 300, 200, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball10Image, 300, 300, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball11Image, 300, 400, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball12Image, 300, 500, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball13Image, 400, 200, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball14Image, 400, 300, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(ball15Image, 400, 400, UNIT_SIZE, UNIT_SIZE, this);
-            g.drawImage(cueBallImage, 400, 500, UNIT_SIZE, UNIT_SIZE, this);
+            g.drawImage(poolTableImage, 300, 150, 800, 400, this);
+            g.drawImage(cueImage, 348, 198, 210, UNIT_SIZE / 4, this);
         }
     }
 
@@ -263,32 +137,46 @@ class GamePanel extends JPanel implements ActionListener {
         double distanceSquared = dx * dx + dy * dy;
         return distanceSquared <= ((UNIT_SIZE / 2) * (UNIT_SIZE / 2));
     }
+}
 
-    public void moveCueBall() {
-        // Update cue ball position
-        x[0] += vxA;
-        y[0] += vyA;
-    
-        // Apply friction
-        vxA *= friction;
-        vyA *= friction;
-    
-        // Check for collisions with walls
-        if (x[0] < 0 || x[0] > SCREEN_WIDTH - UNIT_SIZE) {
-            vxA = -vxA;
-        }
-        if (y[0] < 0 || y[0] > SCREEN_HEIGHT - UNIT_SIZE) {
-            vyA = -vyA;
-        }
+class Ball {
+    double x, y; // Position
+    double radius = 10; // Radius
+    double velocityX, velocityY; // Velocity
+    double friction = 0.99; // Friction coefficient
 
-        if (checkCollision(x[0], y[0], x[1], y[1])) {
-            // Simple elastic collision response
-            double tempVxA = vxA;
-            double tempVyA = vyA;
-            vxA = vxB;
-            vyA = vyB;
-            vxB = tempVxA;
-            vyB = tempVyA;
+    BufferedImage sprite;
+
+    public Ball(double x, double y, BufferedImage sprite) {
+        this.x = x;
+        this.y = y;
+        this.sprite = sprite;
+    }
+
+    /**
+     * Draw the ball
+     * @param g
+     */
+    public void draw(Graphics g) {
+        g.drawImage(sprite, (int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2), null);
+    }
+
+    public void update() {
+        // Move the ball based on its velocity
+        x += velocityX;
+        y += velocityY;
+
+        velocityX *= friction; // Friction
+        velocityY *= friction; // Friction
+
+        // Stop the ball if it's moving very slowly
+        if (Math.abs(velocityX) < 0.1) velocityX = 0;
+        if (Math.abs(velocityY) < 0.1) velocityY = 0;
+
+        if ((x - radius) <= 348) {
+            x = 348 + radius; // Set position to edge to limit it within the table
+            velocityX = -velocityX; // Reverse the energy on collision
+            velocityX *= 0.85; // Lose some energy on collision
         }
     }
 }

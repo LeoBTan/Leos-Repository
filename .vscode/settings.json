@@ -6,5 +6,6 @@
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
     ],
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.release.version": "21"
 }

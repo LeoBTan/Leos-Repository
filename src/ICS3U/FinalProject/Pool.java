@@ -7,10 +7,12 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pool extends JFrame {
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
+    private final CardLayout cardLayout;
+    private final JPanel mainPanel;
 
     public Pool() {
         this.setTitle("Pool");
@@ -45,7 +47,7 @@ public class Pool extends JFrame {
 
 class LandingPage extends JPanel {
     private BufferedImage backgroundImage;
-    private JButton startButton;
+    private final JButton startButton;
 
     LandingPage(Pool pool) {
         this.setPreferredSize(new Dimension(800, 400));
@@ -62,7 +64,7 @@ class LandingPage extends JPanel {
 
         // Create start button
         startButton = new JButton("START GAME");
-        startButton.setBounds(300, 350, 200, 100);
+        startButton.setBounds(600, 300, 200, 100);
         startButton.setFont(new Font("Arial", Font.BOLD, 20));
         startButton.addActionListener(e -> pool.switchToGame());
         this.add(startButton);
@@ -94,6 +96,14 @@ class GamePanel extends JPanel implements ActionListener {
     boolean isGameRunning = true;
 
     BufferedImage poolTableImage, cueImage;
+    BufferedImage[] ballSprites = new BufferedImage[16];
+
+    private List<Ball> balls;
+    private Ball cueBall;
+
+    private Point mousePoint;
+    private boolean isAiming = false;
+    private Timer timer;
 
     GamePanel(Pool pool) {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -106,36 +116,99 @@ class GamePanel extends JPanel implements ActionListener {
         } catch (IOException e) {
             System.out.println("Error loading images: " + e.getMessage());
         }
+
+        try {
+            for (int i = 1; i < 16; i++) {
+                ballSprites[i] = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/PoolBalls/Ball" + i + ".png"));
+                System.out.println("src/ICS3U/FinalProject/images.png/PoolBalls/Ball" + i + ".png");
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading ball images: " + e.getMessage());
+        }
+
+        initBalls();
+
+        this.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (allBallsStopped()) {
+                    double distanceFromCueBall = Math.hypot(e.getX() - cueBall.x, e.getY() - cueBall.y);
+                    if (distanceFromCueBall <= 50) isAiming = true;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (isAiming) {
+                    double dx = e.getX() - cueBall.x;
+                    double dy = e.getY() - cueBall.y;
+                    cueBall.velocityX = dx * 0.1; // Adjust power as needed
+                    cueBall.velocityY = dy * 0.1; // Adjust power as needed
+                    isAiming = false;
+                }
+            }
+        });
+
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                mousePoint = e.getPoint();
+            }
+        });
+
+        //timer = new Timer(16, this);
+        //timer.start();
     }
 
+    public void initBalls() {
+        balls = new ArrayList<>();
+        cueBall = new Ball(450, 345, ballSprites[0], 0);
+        balls.add(cueBall);
+
+        double rackStartX = 850;
+        double rackStartY = 345;
+        int[] ballNumber = {7, 2, 11, 3, 8, 15, 6, 10, 5, 1, 13, 4, 14, 9, 12};
+        int i = 0;
+        for (int row = 0; row < 5; row++) {
+            for (int col = 0; col <= row; col++) {
+                    double x = rackStartX + (row * 20 * 0.866);
+                    double y = rackStartY + (col * 20) - (row * 10);
+                    balls.add(new Ball(x, y, ballSprites[ballNumber[i]], ballNumber[i]));
+                    i++;
+            }
+        }
+    }
+
+    public boolean allBallsStopped() {
+        for (Ball ball : balls) {
+            if (ball.velocityX != 0 || ball.velocityY != 0) return false;
+        }
+        return true;
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        for (Ball ball : balls) ball.update();
+
+        for (int i = 0; i < balls.size(); i++) {
+            for (int j = i + 1; j < balls.size(); j++) {
+                balls.get(i).Colision(balls.get(i), balls.get(j));
+            }
+        }
+        repaint();
     }
 
-    @Override
+        @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawString("Game Started!", 50, 50);
         draw(g);
     }
 
     public void draw(Graphics g) {
-        if (isGameRunning) {
-            g.drawImage(poolTableImage, 300, 150, 800, 400, this);
-            g.drawImage(cueImage, 348, 198, 210, UNIT_SIZE / 4, this);
+        // 3. Specific instructions go here:
+            g.drawImage(poolTableImage, 300, 150, 800, 400, null);
+        
+        for (Ball b : balls) {
+            b.draw(g); // Calls the draw method inside the Ball class
         }
-    }
-
-    public double dotProduct(double v1x, double v1y, double v2x, double v2y) {
-        return v1x * v2x + v1y * v2y;
-    }
-
-    public boolean checkCollision(double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double distanceSquared = dx * dx + dy * dy;
-        return distanceSquared <= ((UNIT_SIZE / 2) * (UNIT_SIZE / 2));
     }
 }
 
@@ -144,21 +217,17 @@ class Ball {
     double radius = 10; // Radius
     double velocityX, velocityY; // Velocity
     double friction = 0.99; // Friction coefficient
+    int number; // Ball number (1-15)
 
     BufferedImage sprite;
 
-    public Ball(double x, double y, BufferedImage sprite) {
+    public Ball(double x, double y, BufferedImage sprite, int number) {
         this.x = x;
         this.y = y;
         this.sprite = sprite;
-    }
-
-    /**
-     * Draw the ball
-     * @param g
-     */
-    public void draw(Graphics g) {
-        g.drawImage(sprite, (int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2), null);
+        this.number = number;
+        this.velocityX = 0;
+        this.velocityY = 0;
     }
 
     public void update() {
@@ -177,6 +246,54 @@ class Ball {
             x = 348 + radius; // Set position to edge to limit it within the table
             velocityX = -velocityX; // Reverse the energy on collision
             velocityX *= 0.85; // Lose some energy on collision
+        } else if ((x + radius) >= 1048) {
+            x = 1048 - radius; // Set position to edge to limit it within the table
+            velocityX = -velocityX; // Reverse the energy on collision
+            velocityX *= 0.85; // Lose some energy on collision
+        }
+
+        if ((y - radius) <= 202) {
+            y = 202 + radius; // Set position to edge to limit it within the table
+            velocityY = -velocityY; // Reverse the energy on collision
+            velocityY *= 0.85; // Lose some energy on collision
+        } else if ((y + radius) >= 490) {
+            y = 490 - radius; // Set position to edge to limit it within the table
+            velocityY = -velocityY; // Reverse the energy on collision
+            velocityY *= 0.85; // Lose some energy on collision
+        }
+    }
+
+    /**
+     * Draw the ball
+     * @param g
+     */
+    public void draw(Graphics g) {
+        g.drawImage(sprite, (int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2), null);
+    }
+
+    public void Colision(Ball ball1, Ball ball2) {
+        double dx = ball2.x - ball1.x; // Distance in x direction
+        double dy = ball2.y - ball1.y; // Distance in y direction
+        double distance = Math.sqrt(dx * dx + dy * dy); // Actual distance between the centers of the two balls
+
+        if (distance < ball1.radius + ball2.radius) {
+            // Calculate the normal vector
+            double nx = dx / distance;
+            double ny = dy / distance;
+
+            // Calculate the relative velocity
+            double rvx = ball2.velocityX - ball1.velocityX;
+            double rvy = ball2.velocityY - ball1.velocityY;
+
+            // Calculate the velocity along the normal
+            double velAlongNormal = rvx * nx + rvy * ny;
+
+            if (velAlongNormal < 0) return; // Balls are moving away from each other
+
+            ball1.velocityX -= velAlongNormal * nx;
+            ball1.velocityY -= velAlongNormal * ny;
+            ball2.velocityX += velAlongNormal * nx;
+            ball2.velocityY += velAlongNormal * ny;
         }
     }
 }

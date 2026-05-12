@@ -3,6 +3,7 @@ package ICS3U.FinalProject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -111,7 +112,7 @@ class GamePanel extends JPanel implements ActionListener {
         this.setFocusable(true);
 
         try {
-            poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable.png"));
+            poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTableNew.png"));
             cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
         } catch (IOException e) {
             System.out.println("Error loading images: " + e.getMessage());
@@ -203,11 +204,20 @@ class GamePanel extends JPanel implements ActionListener {
     }
 
     public void draw(Graphics g) {
-        // 3. Specific instructions go here:
-            g.drawImage(poolTableImage, 300, 150, 800, 400, null);
+        Graphics2D g2d = (Graphics2D) g;
+        g.drawImage(poolTableImage, 300, 150, 800, 400, null);
         
         for (Ball b : balls) {
-            b.draw(g); // Calls the draw method inside the Ball class
+            b.draw(g);
+        }
+
+        if (isAiming && mousePoint != null && cueImage != null) {
+            double angle = Math.atan2(mousePoint.y - cueBall.y, mousePoint.x - cueBall.x);
+            AffineTransform old = g2d.getTransform();
+            g2d.translate(cueBall.x, cueBall.y);
+            g2d.rotate(angle);
+            g2d.drawImage(cueImage, -250, -10, 230, 20, null);
+            g2d.setTransform(old);
         }
     }
 }

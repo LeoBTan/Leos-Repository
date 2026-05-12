@@ -7,5 +7,6 @@
         "lib/**/*.jar"
     ],
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.release.version": "21"
+    "java.project.sourceCompatibility": "21",
+    "java.project.targetCompatibility": "21"
 }

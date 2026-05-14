@@ -150,8 +150,8 @@ class GamePanel extends JPanel implements ActionListener {
                 if (isAiming) {
                     double dx = cueBall.x - e.getX();
                     double dy = cueBall.y - e.getY();
-                    cueBall.velocityX = dx * 0.1; // Adjust power as needed
-                    cueBall.velocityY = dy * 0.1; // Adjust power as needed
+                    cueBall.velocityX = dx * 0.15; // Adjust power as needed
+                    cueBall.velocityY = dy * 0.15; // Adjust power as needed
                     isAiming = false;
                 }
             }
@@ -221,12 +221,57 @@ class GamePanel extends JPanel implements ActionListener {
             b.draw(g);
         }
 
+        if (isAiming && mousePoint != null) {
+            double dx = cueBall.x - mousePoint.x;
+    double dy = cueBall.y - mousePoint.y;
+    double distanceToMouse = Math.hypot(dx, dy);
+    
+    if (distanceToMouse > 0) {
+        double unitX = dx / distanceToMouse;
+        double unitY = dy / distanceToMouse;
+
+        // Default length
+        double lineLength = 600; 
+
+        for (Ball other : balls) {
+            if (other == cueBall) continue; // Don't check the cue ball itself
+
+            double toBallX = other.x - cueBall.x;
+            double toBallY = other.y - cueBall.y;
+
+            double projection = (toBallX * unitX) + (toBallY * unitY);
+
+            if (projection > 0) {
+                double nearestX = cueBall.x + unitX * projection;
+                double nearestY = cueBall.y + unitY * projection;
+                double distToLine = Math.hypot(other.x - nearestX, other.y - nearestY);
+
+                if (distToLine < (cueBall.radius + other.radius)) {
+                    double offset = Math.sqrt(Math.pow(cueBall.radius + other.radius, 2) - Math.pow(distToLine, 2));
+                    double intersectionDist = projection - offset;
+                    if (intersectionDist < lineLength) {
+                        lineLength = intersectionDist;
+                    }
+                }
+            }
+        }
+
+        // Draw the line with our new dynamic lineLength
+        g2d.setColor(new Color(255, 255, 255, 120));
+        g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10}, 0));
+        g2d.drawLine((int)cueBall.x, (int)cueBall.y, (int)(cueBall.x + unitX * lineLength), (int)(cueBall.y + unitY * lineLength));
+        g2d.setStroke(new BasicStroke(1));
+    }
+        }
+
         if (isAiming && mousePoint != null && cueImage != null) {
             double angle = Math.atan2(cueBall.y - mousePoint.y, cueBall.x - mousePoint.x);
+            double dist = Math.hypot(cueBall.x - mousePoint.x, cueBall.y - mousePoint.y);
+            int offset = (int) Math.min(dist, 150);
             AffineTransform old = g2d.getTransform();
             g2d.translate(cueBall.x, cueBall.y);
             g2d.rotate(angle);
-            g2d.drawImage(cueImage, -250, -2, 230, 5, null);
+            g2d.drawImage(cueImage, (-250 - offset), -2, 230, 5, null);
             g2d.setTransform(old);
         }
     }
@@ -299,7 +344,8 @@ class Ball {
         double dy = ball2.y - ball1.y; // Distance in y direction
         double distance = Math.sqrt(dx * dx + dy * dy); // Actual distance between the centers of the two balls
 
-        if (distance <= (ball1.radius + ball2.radius) && distance > 0) { // Check if the balls are colliding and not on top of each other
+        if (distance <= (ball1.radius + ball2.radius) && distance > 0) { // Check if the balls are colliding and not on
+                                                                         // top of each other
             // Calculate the normal vector
             double nx = dx / distance;
             double ny = dy / distance;
@@ -317,9 +363,10 @@ class Ball {
             // Calculate the velocity along the normal
             double velAlongNormal = rvx * nx + rvy * ny;
 
-            if (velAlongNormal < 0) return; // Balls are moving away from each other
+            if (velAlongNormal < 0)
+                return; // Balls are moving away from each other
 
-            double elasticity = (1.8 * velAlongNormal) / 2; // Coefficient of restitution (1 for perfectly elastic)
+            double elasticity = (1.9 * velAlongNormal) / 2;
             ball1.velocityX -= elasticity * nx;
             ball1.velocityY -= elasticity * ny;
             ball2.velocityX += elasticity * nx;

@@ -65,10 +65,16 @@ class LandingPage extends JPanel {
 
         // Create start button
         startButton = new JButton("START GAME");
-        startButton.setBounds(600, 300, 200, 100);
+        startButton.setBounds(625, 374, 200, 100);
         startButton.setFont(new Font("Arial", Font.BOLD, 20));
         startButton.addActionListener(e -> pool.switchToGame());
         this.add(startButton);
+
+        try {
+            backgroundImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/StartingScreen.png"));
+        } catch (IOException e) {
+            System.out.println("Error loading images: " + e.getMessage());
+        }
     }
 
     @Override
@@ -81,7 +87,7 @@ class LandingPage extends JPanel {
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
         if (backgroundImage != null) {
-            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            g2d.drawImage(backgroundImage, 0, 0, 1400, 700, this);
         }
     }
 }
@@ -119,8 +125,9 @@ class GamePanel extends JPanel implements ActionListener {
         }
 
         try {
-            for (int i = 1; i < 16; i++) {
-                ballSprites[i] = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/PoolBalls/Ball" + i + ".png"));
+            for (int i = 0; i < 16; i++) {
+                ballSprites[i] = ImageIO
+                        .read(new File("src/ICS3U/FinalProject/images.png/PoolBalls/Ball" + i + ".png"));
                 System.out.println("src/ICS3U/FinalProject/images.png/PoolBalls/Ball" + i + ".png");
             }
         } catch (IOException e) {
@@ -133,15 +140,16 @@ class GamePanel extends JPanel implements ActionListener {
             public void mousePressed(MouseEvent e) {
                 if (allBallsStopped()) {
                     double distanceFromCueBall = Math.hypot(e.getX() - cueBall.x, e.getY() - cueBall.y);
-                    if (distanceFromCueBall <= 50) isAiming = true;
+                    if (distanceFromCueBall <= 50)
+                        isAiming = true;
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (isAiming) {
-                    double dx = e.getX() - cueBall.x;
-                    double dy = e.getY() - cueBall.y;
+                    double dx = cueBall.x - e.getX();
+                    double dy = cueBall.y - e.getY();
                     cueBall.velocityX = dx * 0.1; // Adjust power as needed
                     cueBall.velocityY = dy * 0.1; // Adjust power as needed
                     isAiming = false;
@@ -155,8 +163,8 @@ class GamePanel extends JPanel implements ActionListener {
             }
         });
 
-        //timer = new Timer(16, this);
-        //timer.start();
+        timer = new Timer(10, this);
+        timer.start();
     }
 
     public void initBalls() {
@@ -166,28 +174,30 @@ class GamePanel extends JPanel implements ActionListener {
 
         double rackStartX = 850;
         double rackStartY = 345;
-        int[] ballNumber = {7, 2, 11, 3, 8, 15, 6, 10, 5, 1, 13, 4, 14, 9, 12};
+        int[] ballNumber = { 7, 2, 11, 3, 8, 15, 6, 10, 5, 1, 13, 4, 14, 9, 12 };
         int i = 0;
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col <= row; col++) {
-                    double x = rackStartX + (row * 20 * 0.866);
-                    double y = rackStartY + (col * 20) - (row * 10);
-                    balls.add(new Ball(x, y, ballSprites[ballNumber[i]], ballNumber[i]));
-                    i++;
+                double x = rackStartX + (row * 18.5);
+                double y = rackStartY + (col * 20) - (row * 10);
+                balls.add(new Ball(x, y, ballSprites[ballNumber[i]], ballNumber[i]));
+                i++;
             }
         }
     }
 
     public boolean allBallsStopped() {
         for (Ball ball : balls) {
-            if (ball.velocityX != 0 || ball.velocityY != 0) return false;
+            if (ball.velocityX != 0 || ball.velocityY != 0)
+                return false;
         }
         return true;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        for (Ball ball : balls) ball.update();
+        for (Ball ball : balls)
+            ball.update();
 
         for (int i = 0; i < balls.size(); i++) {
             for (int j = i + 1; j < balls.size(); j++) {
@@ -197,7 +207,7 @@ class GamePanel extends JPanel implements ActionListener {
         repaint();
     }
 
-        @Override
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(g);
@@ -206,17 +216,17 @@ class GamePanel extends JPanel implements ActionListener {
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(poolTableImage, 300, 150, 800, 400, null);
-        
+
         for (Ball b : balls) {
             b.draw(g);
         }
 
         if (isAiming && mousePoint != null && cueImage != null) {
-            double angle = Math.atan2(mousePoint.y - cueBall.y, mousePoint.x - cueBall.x);
+            double angle = Math.atan2(cueBall.y - mousePoint.y, cueBall.x - mousePoint.x);
             AffineTransform old = g2d.getTransform();
             g2d.translate(cueBall.x, cueBall.y);
             g2d.rotate(angle);
-            g2d.drawImage(cueImage, -250, -10, 230, 20, null);
+            g2d.drawImage(cueImage, -250, -2, 230, 5, null);
             g2d.setTransform(old);
         }
     }
@@ -226,7 +236,7 @@ class Ball {
     double x, y; // Position
     double radius = 10; // Radius
     double velocityX, velocityY; // Velocity
-    double friction = 0.99; // Friction coefficient
+    double friction = 0.98; // Friction coefficient
     int number; // Ball number (1-15)
 
     BufferedImage sprite;
@@ -249,8 +259,10 @@ class Ball {
         velocityY *= friction; // Friction
 
         // Stop the ball if it's moving very slowly
-        if (Math.abs(velocityX) < 0.1) velocityX = 0;
-        if (Math.abs(velocityY) < 0.1) velocityY = 0;
+        if (Math.abs(velocityX) < 0.1)
+            velocityX = 0;
+        if (Math.abs(velocityY) < 0.1)
+            velocityY = 0;
 
         if ((x - radius) <= 348) {
             x = 348 + radius; // Set position to edge to limit it within the table
@@ -275,6 +287,7 @@ class Ball {
 
     /**
      * Draw the ball
+     * 
      * @param g
      */
     public void draw(Graphics g) {
@@ -286,24 +299,31 @@ class Ball {
         double dy = ball2.y - ball1.y; // Distance in y direction
         double distance = Math.sqrt(dx * dx + dy * dy); // Actual distance between the centers of the two balls
 
-        if (distance < ball1.radius + ball2.radius) {
+        if (distance <= (ball1.radius + ball2.radius) && distance > 0) { // Check if the balls are colliding and not on top of each other
             // Calculate the normal vector
             double nx = dx / distance;
             double ny = dy / distance;
+            double overlap = (ball1.radius + ball2.radius - distance) / 2;
+
+            ball1.x -= nx * overlap;
+            ball1.y -= ny * overlap;
+            ball2.x += nx * overlap;
+            ball2.y += ny * overlap;
 
             // Calculate the relative velocity
-            double rvx = ball2.velocityX - ball1.velocityX;
-            double rvy = ball2.velocityY - ball1.velocityY;
+            double rvx = ball1.velocityX - ball2.velocityX;
+            double rvy = ball1.velocityY - ball2.velocityY;
 
             // Calculate the velocity along the normal
             double velAlongNormal = rvx * nx + rvy * ny;
 
             if (velAlongNormal < 0) return; // Balls are moving away from each other
 
-            ball1.velocityX -= velAlongNormal * nx;
-            ball1.velocityY -= velAlongNormal * ny;
-            ball2.velocityX += velAlongNormal * nx;
-            ball2.velocityY += velAlongNormal * ny;
+            double elasticity = (1.8 * velAlongNormal) / 2; // Coefficient of restitution (1 for perfectly elastic)
+            ball1.velocityX -= elasticity * nx;
+            ball1.velocityY -= elasticity * ny;
+            ball2.velocityX += elasticity * nx;
+            ball2.velocityY += elasticity * ny;
         }
     }
 }

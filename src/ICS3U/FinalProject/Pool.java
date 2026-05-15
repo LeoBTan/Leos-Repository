@@ -100,17 +100,17 @@ class GamePanel extends JPanel implements ActionListener {
 
     final int[] x = new int[GAME_UNITS];
     final int[] y = new int[GAME_UNITS];
-    boolean isGameRunning = true;
 
     BufferedImage poolTableImage, cueImage;
     BufferedImage[] ballSprites = new BufferedImage[16];
 
     private List<Ball> balls;
+    private List<Pocket> pockets;
     private Ball cueBall;
 
     private Point mousePoint;
     private boolean isAiming = false;
-    private Timer timer;
+    private final Timer timer;
 
     GamePanel(Pool pool) {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -135,8 +135,10 @@ class GamePanel extends JPanel implements ActionListener {
         }
 
         initBalls();
+        initPockets();
 
         this.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 if (allBallsStopped()) {
                     double distanceFromCueBall = Math.hypot(e.getX() - cueBall.x, e.getY() - cueBall.y);
@@ -158,6 +160,7 @@ class GamePanel extends JPanel implements ActionListener {
         });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent e) {
                 mousePoint = e.getPoint();
             }
@@ -178,12 +181,22 @@ class GamePanel extends JPanel implements ActionListener {
         int i = 0;
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col <= row; col++) {
-                double x = rackStartX + (row * 18.5);
-                double y = rackStartY + (col * 20) - (row * 10);
-                balls.add(new Ball(x, y, ballSprites[ballNumber[i]], ballNumber[i]));
+                double rackX = rackStartX + (row * 18.5);
+                double rackY = rackStartY + (col * 20) - (row * 10);
+                balls.add(new Ball(rackX, rackY, ballSprites[ballNumber[i]], ballNumber[i]));
                 i++;
             }
         }
+    }
+
+    public void initPockets() {
+        pockets = new ArrayList<>();
+        pockets.add(new Pocket(348, 202, 15));
+        pockets.add(new Pocket(700, 202, 20));
+        pockets.add(new Pocket(1048, 202, 15));
+        pockets.add(new Pocket(348, 490, 15));
+        pockets.add(new Pocket(700, 490, 20));
+        pockets.add(new Pocket(1048, 490, 15));
     }
 
     public boolean allBallsStopped() {
@@ -202,6 +215,18 @@ class GamePanel extends JPanel implements ActionListener {
         for (int i = 0; i < balls.size(); i++) {
             for (int j = i + 1; j < balls.size(); j++) {
                 balls.get(i).Colision(balls.get(i), balls.get(j));
+            }
+        }
+
+        for (Ball ball : balls) {
+            if (!ball.isOnTable) continue;
+            for (Pocket pocket : pockets) {
+                if (pocket.isBallInPocket(ball)) {
+                    ball.isOnTable = false;
+                    ball.velocityX = 0;
+                    ball.velocityY = 0;
+                    break;
+                }
             }
         }
         repaint();
@@ -223,45 +248,49 @@ class GamePanel extends JPanel implements ActionListener {
 
         if (isAiming && mousePoint != null) {
             double dx = cueBall.x - mousePoint.x;
-    double dy = cueBall.y - mousePoint.y;
-    double distanceToMouse = Math.hypot(dx, dy);
-    
-    if (distanceToMouse > 0) {
-        double unitX = dx / distanceToMouse;
-        double unitY = dy / distanceToMouse;
+            double dy = cueBall.y - mousePoint.y;
+            double distanceToMouse = Math.hypot(dx, dy);
 
-        // Default length
-        double lineLength = 600; 
+            if (distanceToMouse > 0) {
+                double unitX = dx / distanceToMouse;
+                double unitY = dy / distanceToMouse;
 
-        for (Ball other : balls) {
-            if (other == cueBall) continue; // Don't check the cue ball itself
+                // Default length
+                double lineLength = 600;
 
-            double toBallX = other.x - cueBall.x;
-            double toBallY = other.y - cueBall.y;
+                for (Ball other : balls) {
+                    if (other == cueBall)
+                        continue; // Don't check the cue ball itself
 
-            double projection = (toBallX * unitX) + (toBallY * unitY);
+                    double distToBallX = other.x - cueBall.x;
+                    double distToBallY = other.y - cueBall.y;
 
-            if (projection > 0) {
-                double nearestX = cueBall.x + unitX * projection;
-                double nearestY = cueBall.y + unitY * projection;
-                double distToLine = Math.hypot(other.x - nearestX, other.y - nearestY);
+                    double projection = (distToBallX * unitX) + (distToBallY * unitY);
 
-                if (distToLine < (cueBall.radius + other.radius)) {
-                    double offset = Math.sqrt(Math.pow(cueBall.radius + other.radius, 2) - Math.pow(distToLine, 2));
-                    double intersectionDist = projection - offset;
-                    if (intersectionDist < lineLength) {
-                        lineLength = intersectionDist;
+                    if (projection > 0) {
+                        double nearestX = cueBall.x + unitX * projection;
+                        double nearestY = cueBall.y + unitY * projection;
+                        double distToLine = Math.hypot(other.x - nearestX, other.y - nearestY);
+
+                        if (distToLine < (cueBall.radius + other.radius)) {
+                            double offset = Math
+                                    .sqrt(Math.pow(cueBall.radius + other.radius, 2) - Math.pow(distToLine, 2));
+                            double intersectionDist = projection - offset;
+                            if (intersectionDist < lineLength) {
+                                lineLength = intersectionDist;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        // Draw the line with our new dynamic lineLength
-        g2d.setColor(new Color(255, 255, 255, 120));
-        g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{10}, 0));
-        g2d.drawLine((int)cueBall.x, (int)cueBall.y, (int)(cueBall.x + unitX * lineLength), (int)(cueBall.y + unitY * lineLength));
-        g2d.setStroke(new BasicStroke(1));
-    }
+                // Draw the line with our new dynamic lineLength
+                g2d.setColor(new Color(255, 255, 255, 120));
+                g2d.setStroke(
+                        new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 10 }, 0));
+                g2d.drawLine((int) cueBall.x, (int) cueBall.y, (int) (cueBall.x + unitX * lineLength),
+                        (int) (cueBall.y + unitY * lineLength));
+                g2d.setStroke(new BasicStroke(1));
+            }
         }
 
         if (isAiming && mousePoint != null && cueImage != null) {
@@ -283,6 +312,7 @@ class Ball {
     double velocityX, velocityY; // Velocity
     double friction = 0.98; // Friction coefficient
     int number; // Ball number (1-15)
+    boolean isOnTable = true; // Whether the ball is still on the table
 
     BufferedImage sprite;
 
@@ -296,6 +326,8 @@ class Ball {
     }
 
     public void update() {
+        if (!isOnTable)
+            return;
         // Move the ball based on its velocity
         x += velocityX;
         y += velocityY;
@@ -304,9 +336,9 @@ class Ball {
         velocityY *= friction; // Friction
 
         // Stop the ball if it's moving very slowly
-        if (Math.abs(velocityX) < 0.1)
+        if (Math.abs(velocityX) < 0.2)
             velocityX = 0;
-        if (Math.abs(velocityY) < 0.1)
+        if (Math.abs(velocityY) < 0.2)
             velocityY = 0;
 
         if ((x - radius) <= 348) {
@@ -336,6 +368,8 @@ class Ball {
      * @param g
      */
     public void draw(Graphics g) {
+        if (!isOnTable)
+            return;
         g.drawImage(sprite, (int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2), null);
     }
 
@@ -372,5 +406,23 @@ class Ball {
             ball2.velocityX += elasticity * nx;
             ball2.velocityY += elasticity * ny;
         }
+    }
+}
+
+class Pocket {
+    double x, y; // Position
+    double radius; // Radius
+
+    public Pocket(double x, double y, double radius) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    public boolean isBallInPocket(Ball ball) {
+        double dx = ball.x - x;
+        double dy = ball.y - y;
+        double distance = Math.hypot(dx, dy);
+        return distance <= radius;
     }
 }

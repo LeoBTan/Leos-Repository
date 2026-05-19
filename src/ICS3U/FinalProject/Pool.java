@@ -118,7 +118,7 @@ class GamePanel extends JPanel implements ActionListener {
         this.setFocusable(true);
 
         try {
-            poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTableNew.png"));
+            poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable2.png"));
             cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
         } catch (IOException e) {
             System.out.println("Error loading images: " + e.getMessage());

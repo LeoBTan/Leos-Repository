@@ -97,11 +97,14 @@ class GamePanel extends JPanel implements ActionListener {
     private final int SCREEN_HEIGHT = 700;
     private final int UNIT_SIZE = 19;
     private final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
+    final int pixelFinderX = 300;
+    final int pixelFinderY = 100;
 
     final int[] x = new int[GAME_UNITS];
     final int[] y = new int[GAME_UNITS];
 
-    BufferedImage poolTableImage, cueImage;
+    BufferedImage poolTableImage, cueImage, scoreboardImage;
+    BufferedImage pixelFinder;
     BufferedImage[] ballSprites = new BufferedImage[16];
 
     private List<Ball> balls;
@@ -116,10 +119,11 @@ class GamePanel extends JPanel implements ActionListener {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.green);
         this.setFocusable(true);
-
+        
         try {
             poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable2.png"));
             cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
+            scoreboardImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Scoreboard.png"));
         } catch (IOException e) {
             System.out.println("Error loading images: " + e.getMessage());
         }
@@ -241,6 +245,8 @@ class GamePanel extends JPanel implements ActionListener {
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(poolTableImage, 300, 150, 800, 400, null);
+        g.drawImage(scoreboardImage, 450, 600, 500, 100, null);
+        g.drawImage(pixelFinder, 0, 0, null);
 
         for (Ball b : balls) {
             b.draw(g);

@@ -115,11 +115,14 @@ class GamePanel extends JPanel implements ActionListener {
     private boolean isAiming = false;
     private final Timer timer;
 
+    private Scoring scoring = new Scoring();
+    private boolean shotFired = false;
+
     GamePanel(Pool pool) {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.green);
         this.setFocusable(true);
-        
+
         try {
             poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable2.png"));
             cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
@@ -160,6 +163,7 @@ class GamePanel extends JPanel implements ActionListener {
                     cueBall.velocityX = dx * 0.15; // Adjust power as needed
                     cueBall.velocityY = dy * 0.15; // Adjust power as needed
                     isAiming = false;
+                    shotFired = true;
                 }
             }
         });
@@ -202,6 +206,7 @@ class GamePanel extends JPanel implements ActionListener {
         pockets.add(new Pocket(352, 494));
         pockets.add(new Pocket(696, 500));
         pockets.add(new Pocket(1044, 494));
+        scoring = new Scoring();
     }
 
     public boolean allBallsStopped() {
@@ -224,12 +229,14 @@ class GamePanel extends JPanel implements ActionListener {
         }
 
         for (Ball ball : balls) {
-            if (!ball.isOnTable) continue;
+            if (!ball.isOnTable)
+                continue;
             for (Pocket pocket : pockets) {
                 if (pocket.isBallInPocket(ball)) {
                     ball.isOnTable = false;
                     ball.velocityX = 0;
                     ball.velocityY = 0;
+                    scoring.onPocketedBall(ball.number);
                     break;
                 }
             }
@@ -243,6 +250,12 @@ class GamePanel extends JPanel implements ActionListener {
             cueBall.velocityY = 0;
             cueBall.isOnTable = true;
         }
+
+        if (shotFired && allBallsStopped()) {
+            scoring.endTurn();
+            shotFired = false;
+        }
+
         repaint();
     }
 
@@ -369,7 +382,7 @@ class Ball {
             x = 1043 - radius;
             velocityX = -velocityX;
             velocityX *= 0.85;
-            if (velocityX< 0.1 && velocityX > -0.1) {
+            if (velocityX < 0.1 && velocityX > -0.1) {
                 velocityX = 0;
                 x = 1043 - radius - 1;
             }
@@ -451,5 +464,123 @@ class Pocket {
         double dy = ball.y - y;
         double distance = Math.hypot(dx, dy);
         return distance <= 20;
+    }
+}
+
+class Scoring {
+    public enum ScoringBallType {
+        UNDETERMINED, SOLID, STRIPED
+    };
+
+    public enum GameState {
+        ACTIVE, PLAYER1_WINS, PLAYER2_WINS
+    };
+
+    private ScoringBallType player1Type = ScoringBallType.UNDETERMINED;
+    private ScoringBallType player2Type = ScoringBallType.UNDETERMINED;
+    private GameState gameState = GameState.ACTIVE;
+
+    private int currentPlayer = 1;
+    private boolean ballSunkThisTurn = false;
+    private boolean foulThisTurn = false;
+
+    private final List<Integer> sunkBalls = new ArrayList<>();
+
+    private ScoringBallType isWhichType(int ballNumber) {
+        if (ballNumber >= 1 && ballNumber <= 7)
+            return ScoringBallType.SOLID;
+        if (ballNumber >= 9 && ballNumber <= 15)
+            return ScoringBallType.STRIPED;
+        return ScoringBallType.UNDETERMINED;
+    }
+
+    public void onPocketedBall(int ballNumber) {
+        if (gameState != GameState.ACTIVE)
+            return;
+
+        if (ballNumber == 0) {
+            foulThisTurn = true;
+            return;
+        }
+
+        sunkBalls.add(ballNumber);
+
+        if (ballNumber == 8) {
+            ScoringBallType myType = ((currentPlayer == 1) ? player1Type : player2Type);
+            boolean clearedAll = isAllSunk(myType);
+            if (clearedAll && !foulThisTurn) {
+                gameState = (currentPlayer == 1) ? GameState.PLAYER1_WINS : GameState.PLAYER2_WINS;
+            } else {
+                gameState = (currentPlayer == 1) ? GameState.PLAYER2_WINS : GameState.PLAYER1_WINS;
+            }
+            return;
+        }
+
+        ScoringBallType ballType = isWhichType(ballNumber);
+
+        if (player1Type == ScoringBallType.UNDETERMINED) {
+            player1Type = (currentPlayer == 1) ? ballType
+                    : (ballType == ScoringBallType.SOLID ? ScoringBallType.STRIPED : ScoringBallType.SOLID);
+                    player2Type = player1Type == ScoringBallType.SOLID ? ScoringBallType.STRIPED : ScoringBallType.SOLID;
+        }
+
+        ScoringBallType myType = (currentPlayer == 1) ? player1Type : player2Type;
+        if (ballType == myType) ballSunkThisTurn = true;
+    }
+
+    public void endTurn() {
+        if (gameState != GameState.ACTIVE) return;
+
+        if (foulThisTurn || !ballSunkThisTurn) {
+            currentPlayer = (currentPlayer == 1) ? 2 : 1;
+        }
+
+        ballSunkThisTurn = false;
+        foulThisTurn = false;
+    }
+
+    public boolean isAllSunk(ScoringBallType type) {
+        if (type == ScoringBallType.UNDETERMINED)
+            return false;
+        int start = (type == ScoringBallType.SOLID) ? 1 : 9;
+        int end = (type == ScoringBallType.SOLID) ? 7 : 15;
+        for (int i = start; i <= end; i++) {
+            if (!sunkBalls.contains(i))
+                return false;
+        }
+        return true;
+    }
+
+    private void resolveEightBall() {
+        ScoringBallType myType = ((currentPlayer == 1) ? player1Type : player2Type);
+        boolean clearedAll = isAllSunk(myType);
+
+        if (clearedAll && !foulThisTurn) {
+            gameState = (currentPlayer == 1) ? GameState.PLAYER1_WINS : GameState.PLAYER2_WINS;
+        } else {
+            gameState = (currentPlayer == 1) ? GameState.PLAYER2_WINS : GameState.PLAYER1_WINS;
+        }
+    }
+
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
+    public GameState getGameState() {
+        return gameState;
+    }
+    public ScoringBallType getPlayer1Type() {
+        return player1Type;
+    }
+    public ScoringBallType getPlayer2Type() {
+        return player2Type;
+    }
+    public boolean isFoul() {
+        return foulThisTurn;
+    }
+    public boolean isGameOver() {
+        return gameState != GameState.ACTIVE;
+    }
+    public List<Integer> getSunkBalls() {
+        return sunkBalls;
     }
 }

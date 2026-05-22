@@ -97,8 +97,8 @@ class GamePanel extends JPanel implements ActionListener {
     private final int SCREEN_HEIGHT = 700;
     private final int UNIT_SIZE = 19;
     private final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    final int pixelFinderX = 300;
-    final int pixelFinderY = 100;
+    final int pixelFinderX = 600;
+    final int pixelFinderY = 494;
 
     final int[] x = new int[GAME_UNITS];
     final int[] y = new int[GAME_UNITS];
@@ -124,6 +124,7 @@ class GamePanel extends JPanel implements ActionListener {
             poolTableImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/PoolTable2.png"));
             cueImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Cue.png"));
             scoreboardImage = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Scoreboard.png"));
+            pixelFinder = ImageIO.read(new File("src/ICS3U/FinalProject/images.png/Components/Indicator.png"));
         } catch (IOException e) {
             System.out.println("Error loading images: " + e.getMessage());
         }
@@ -195,12 +196,12 @@ class GamePanel extends JPanel implements ActionListener {
 
     public void initPockets() {
         pockets = new ArrayList<>();
-        pockets.add(new Pocket(348, 202, 15));
-        pockets.add(new Pocket(700, 202, 20));
-        pockets.add(new Pocket(1048, 202, 15));
-        pockets.add(new Pocket(348, 490, 15));
-        pockets.add(new Pocket(700, 490, 20));
-        pockets.add(new Pocket(1048, 490, 15));
+        pockets.add(new Pocket(352, 202));
+        pockets.add(new Pocket(696, 198));
+        pockets.add(new Pocket(1044, 202));
+        pockets.add(new Pocket(352, 494));
+        pockets.add(new Pocket(696, 500));
+        pockets.add(new Pocket(1044, 494));
     }
 
     public boolean allBallsStopped() {
@@ -233,6 +234,15 @@ class GamePanel extends JPanel implements ActionListener {
                 }
             }
         }
+
+        if (!cueBall.isOnTable) {
+            // Cue ball is pocketed, reset its position
+            cueBall.x = 450;
+            cueBall.y = 345;
+            cueBall.velocityX = 0;
+            cueBall.velocityY = 0;
+            cueBall.isOnTable = true;
+        }
         repaint();
     }
 
@@ -246,7 +256,7 @@ class GamePanel extends JPanel implements ActionListener {
         Graphics2D g2d = (Graphics2D) g;
         g.drawImage(poolTableImage, 300, 150, 800, 400, null);
         g.drawImage(scoreboardImage, 450, 600, 500, 100, null);
-        g.drawImage(pixelFinder, 0, 0, null);
+        g.drawImage(pixelFinder, pixelFinderX, pixelFinderY, 4, 4, null);
 
         for (Ball b : balls) {
             b.draw(g);
@@ -347,24 +357,40 @@ class Ball {
         if (Math.abs(velocityY) < 0.2)
             velocityY = 0;
 
-        if ((x - radius) <= 348) {
-            x = 348 + radius; // Set position to edge to limit it within the table
-            velocityX = -velocityX; // Reverse the energy on collision
-            velocityX *= 0.85; // Lose some energy on collision
-        } else if ((x + radius) >= 1048) {
-            x = 1048 - radius; // Set position to edge to limit it within the table
-            velocityX = -velocityX; // Reverse the energy on collision
-            velocityX *= 0.85; // Lose some energy on collision
+        if ((x - radius) <= 353) {
+            x = 353 + radius;
+            velocityX = -velocityX;
+            velocityX *= 0.85;
+            if (velocityX < 0.1 && velocityX > -0.1) {
+                velocityX = 0;
+                x = 353 + radius + 1;
+            }
+        } else if ((x + radius) >= 1043) {
+            x = 1043 - radius;
+            velocityX = -velocityX;
+            velocityX *= 0.85;
+            if (velocityX< 0.1 && velocityX > -0.1) {
+                velocityX = 0;
+                x = 1043 - radius - 1;
+            }
         }
 
-        if ((y - radius) <= 202) {
-            y = 202 + radius; // Set position to edge to limit it within the table
-            velocityY = -velocityY; // Reverse the energy on collision
-            velocityY *= 0.85; // Lose some energy on collision
-        } else if ((y + radius) >= 490) {
-            y = 490 - radius; // Set position to edge to limit it within the table
-            velocityY = -velocityY; // Reverse the energy on collision
-            velocityY *= 0.85; // Lose some energy on collision
+        if ((y - radius) <= 203) {
+            y = 203 + radius;
+            velocityY = -velocityY;
+            velocityY *= 0.85;
+            if (velocityY < 0.1 && velocityY > -0.1) {
+                velocityY = 0;
+                y = 203 + radius + 1;
+            }
+        } else if ((y + radius) >= 493) {
+            y = 493 - radius;
+            velocityY = -velocityY;
+            velocityY *= 0.85;
+            if (velocityY < 0.1 && velocityY > -0.1) {
+                velocityY = 0;
+                y = 493 - radius - 1;
+            }
         }
     }
 
@@ -380,13 +406,11 @@ class Ball {
     }
 
     public void Colision(Ball ball1, Ball ball2) {
-        double dx = ball2.x - ball1.x; // Distance in x direction
-        double dy = ball2.y - ball1.y; // Distance in y direction
-        double distance = Math.sqrt(dx * dx + dy * dy); // Actual distance between the centers of the two balls
+        double dx = ball2.x - ball1.x;
+        double dy = ball2.y - ball1.y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance <= (ball1.radius + ball2.radius) && distance > 0) { // Check if the balls are colliding and not on
-                                                                         // top of each other
-            // Calculate the normal vector
+        if (distance <= (ball1.radius + ball2.radius) && distance > 0) {
             double nx = dx / distance;
             double ny = dy / distance;
             double overlap = (ball1.radius + ball2.radius - distance) / 2;
@@ -396,15 +420,13 @@ class Ball {
             ball2.x += nx * overlap;
             ball2.y += ny * overlap;
 
-            // Calculate the relative velocity
             double rvx = ball1.velocityX - ball2.velocityX;
             double rvy = ball1.velocityY - ball2.velocityY;
 
-            // Calculate the velocity along the normal
             double velAlongNormal = rvx * nx + rvy * ny;
 
             if (velAlongNormal < 0)
-                return; // Balls are moving away from each other
+                return;
 
             double elasticity = (1.9 * velAlongNormal) / 2;
             ball1.velocityX -= elasticity * nx;
@@ -419,16 +441,15 @@ class Pocket {
     double x, y; // Position
     double radius; // Radius
 
-    public Pocket(double x, double y, double radius) {
+    public Pocket(double x, double y) {
         this.x = x;
         this.y = y;
-        this.radius = radius;
     }
 
     public boolean isBallInPocket(Ball ball) {
         double dx = ball.x - x;
         double dy = ball.y - y;
         double distance = Math.hypot(dx, dy);
-        return distance <= radius;
+        return distance <= 20;
     }
 }

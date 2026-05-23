@@ -6,8 +6,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
 
-public class SnakeGame extends JFrame {
-    public SnakeGame() {
+public class SnakeGameAIExample extends JFrame {
+    public SnakeGameAIExample() {
         this.add(new GamePanel());
         this.setTitle("Java Snake");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,7 +18,7 @@ public class SnakeGame extends JFrame {
     }
 
     public static void main(String[] args) {
-        new SnakeGame();
+        new SnakeGameAIExample();
     }
 }
 
